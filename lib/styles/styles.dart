@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
-const TextHeading = TextStyle();
-const TextDescription = TextStyle();
+const secondaryColor = Color(0xff4B60BC);
+const primaryColor = Color(0xffff6f00);
