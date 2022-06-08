@@ -1,12 +1,19 @@
+import 'package:astrotak/appRepository/appRepository.dart';
+import 'package:astrotak/bloc/relativemanagement_bloc.dart';
 import 'package:astrotak/styles/styles.dart';
+import 'package:astrotak/widgets/location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddNewProfileForm extends StatefulWidget {
   const AddNewProfileForm({Key? key}) : super(key: key);
 
   @override
   State<AddNewProfileForm> createState() => _AddNewProfileFormState();
+
+  static _AddNewProfileFormState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_AddNewProfileFormState>();
 }
 
 class _AddNewProfileFormState extends State<AddNewProfileForm> {
@@ -15,6 +22,46 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
   _selectAmPm(value) {
     setState(() {
       am = value;
+    });
+  }
+
+  String? meridiem, placeName, placeId, firstName, lastName = "", gender;
+  int? dobDay, dobMonth, dobYear, tobHour, tobMin, relationId;
+
+  Map location = {};
+
+  setLocation(String id, String name) {
+    setState(() => {location["id"] = id, location["name"] = name});
+  }
+
+  setGender(value) {
+    setState(() {
+      gender = value;
+    });
+  }
+
+  setRelation(value) {}
+
+  _vaidateAndSave() {
+    _formKey.currentState?.validate();
+    if (_formKey.currentState?.validate() != true) {
+      return;
+    }
+    _formKey.currentState?.save();
+    AppRepository().addRelativce({
+      "birthDetails": {
+        "dobDay": dobDay,
+        "dobMonth": dobMonth,
+        "dobYear": dobYear,
+        "tobHour": tobHour,
+        "tobMin": tobMin,
+        "meridiem": am ? "AM" : "PM"
+      },
+      "birthPlace": {"placeName": location['name'], "placeId": location['id']},
+      "firstName": firstName,
+      "lastName": lastName,
+      "relationId": 3,
+      "gender": gender
     });
   }
 
@@ -30,10 +77,13 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                 style: Theme.of(context).textTheme.bodyText1,
               )),
           TextFormField(
+            onSaved: (String? value) {
+              firstName = value;
+            },
             decoration: InputDecoration(border: OutlineInputBorder()),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter some text';
+                return 'Enter valid Name';
               }
               return null;
             },
@@ -55,13 +105,20 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                   child: Padding(
                       padding: EdgeInsets.all(3),
                       child: TextFormField(
+                        onSaved: (String? value) {
+                          dobDay = int.parse(value!);
+                        },
                         maxLength: 2,
+                        keyboardType: TextInputType.number,
                         maxLengthEnforcement: MaxLengthEnforcement.enforced,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(), hintText: "DD"),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
+                          if (value == null ||
+                              value.isEmpty ||
+                              int.parse(value) > 31 ||
+                              int.parse(value) < 1) {
+                            return 'Invalid DD';
                           }
                           return null;
                         },
@@ -71,12 +128,19 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                       padding: EdgeInsets.all(3),
                       child: TextFormField(
                         maxLength: 2,
+                        keyboardType: TextInputType.number,
+                        onSaved: (String? value) {
+                          dobMonth = int.parse(value!);
+                        },
                         maxLengthEnforcement: MaxLengthEnforcement.enforced,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(), hintText: "MM"),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
+                          if (value == null ||
+                              value.isEmpty ||
+                              int.parse(value) > 12 ||
+                              int.parse(value) < 1) {
+                            return 'Invalid MM';
                           }
                           return null;
                         },
@@ -88,10 +152,14 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                   decoration: InputDecoration(
                       border: OutlineInputBorder(), hintText: "YYYY"),
                   maxLength: 4,
+                  onSaved: (String? value) {
+                    dobYear = int.parse(value!);
+                  },
                   maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
+                      return 'Invalid Year';
                     }
                     return null;
                   },
@@ -114,12 +182,19 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                       padding: EdgeInsets.all(3),
                       child: TextFormField(
                         maxLength: 2,
+                        keyboardType: TextInputType.number,
+                        onSaved: (String? value) {
+                          tobHour = int.parse(value!);
+                        },
                         maxLengthEnforcement: MaxLengthEnforcement.enforced,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(), hintText: "HH"),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
+                          if (value == null ||
+                              value.isEmpty ||
+                              int.parse(value) > 24 ||
+                              int.parse(value) < 0) {
+                            return 'Invalid HH';
                           }
                           return null;
                         },
@@ -130,11 +205,17 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                       child: TextFormField(
                         maxLength: 2,
                         maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                        onSaved: (String? value) {
+                          tobMin = int.parse(value!);
+                        },
                         decoration: InputDecoration(
                             border: OutlineInputBorder(), hintText: "MM"),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
+                          if (value == null ||
+                              value.isEmpty ||
+                              int.parse(value) > 60 ||
+                              int.parse(value) < 0) {
+                            return 'Invalid MM';
                           }
                           return null;
                         },
@@ -191,15 +272,8 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                 "Place of Birth",
                 style: Theme.of(context).textTheme.bodyText1,
               )),
-          TextFormField(
-            decoration: InputDecoration(border: OutlineInputBorder()),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select a city';
-              }
-              return null;
-            },
-          ),
+          LocationTextBox(callback: setLocation),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -216,16 +290,27 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                                 "Gender",
                                 style: Theme.of(context).textTheme.bodyText1,
                               )),
-                          TextFormField(
+                          DropdownButtonFormField(
                             decoration:
                                 InputDecoration(border: OutlineInputBorder()),
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter some text';
+                              if (value == null) {
+                                return 'Invalid Gender';
                               }
                               return null;
                             },
-                          )
+                            items: ["MALE", "FEMALE"].map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                setGender(newValue);
+                              });
+                            },
+                          ),
                         ])),
               ),
               Expanded(
@@ -241,20 +326,38 @@ class _AddNewProfileFormState extends State<AddNewProfileForm> {
                                 "Relation",
                                 style: Theme.of(context).textTheme.bodyText1,
                               )),
-                          TextFormField(
+                          DropdownButtonFormField(
                             decoration:
                                 InputDecoration(border: OutlineInputBorder()),
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter some text';
+                              if (value == null) {
+                                return 'Invalid Relation';
                               }
                               return null;
                             },
-                          )
+                            items: ["MOTHER", "FATHER", "SISTER", "BROTHER"]
+                                .map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                setRelation(newValue);
+                              });
+                            },
+                          ),
                         ])),
               )
             ],
           ),
+          Center(
+            child: ElevatedButton(
+              onPressed: _vaidateAndSave,
+              child: Text("Save Changes"),
+            ),
+          )
         ]));
   }
 }

@@ -1,6 +1,8 @@
+import 'package:astrotak/bloc/astrotakQuestions_bloc.dart';
 import 'package:astrotak/screens/askQuestion.dart';
 import 'package:astrotak/screens/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class BottomBar extends StatefulWidget {
@@ -43,7 +45,24 @@ class _BottomBarState extends State<BottomBar> {
           ),
         ],
       ),
-      body: const AskQuestion(),
+      body:
+          BlocBuilder<QuestionsBloc, QuestionsState>(builder: (context, state) {
+        if (state is QuestionsInprogress)
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        else if (state is QuestionsFailure)
+          return Center(
+            child: Text("Something went wrong"),
+          );
+        else if (state is QuestionsSuccess) {
+          List<String> cats = [];
+          state.astrotak.forEach((q) => {cats.add(q.name ?? "")});
+          return AskQuestion(cats, state.astrotak);
+        } else {
+          return Text("Something went wrong");
+        }
+      }),
       floatingActionButton: Align(
           alignment: Alignment(1, 0.9),
           child: FloatingActionButton(

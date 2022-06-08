@@ -1,3 +1,5 @@
+import 'package:astrotak/model/Location.dart';
+import 'package:astrotak/model/Question.dart';
 import 'package:astrotak/utils/httpClient.dart';
 import 'package:dio/dio.dart';
 
@@ -29,6 +31,7 @@ class AppRepository {
 
   Future<dynamic> getRelativeList() async {
     try {
+      return "";
       final response = await sendGet("relative/all");
       print(response);
       if (response != null) {
@@ -39,39 +42,26 @@ class AppRepository {
     }
   }
 
-  Future<dynamic> getAllQuestion() async {
+  Future<List<Question>> getAllQuestion() async {
     try {
       final response = await sendGet("question/category/all");
-      print(response);
       if (response != null) {
-        print(response);
-        return response.data;
+        List<Question> ques = [];
+        response.data["data"]
+            .forEach((e) => {print(e), ques.add(Question.fromJson(e))});
+        return ques;
+      } else {
+        return [];
       }
     } catch (e) {
-      return false;
+      return [];
     }
   }
 
-  Future<dynamic> addRelativce() async {
+  Future<dynamic> addRelativce(data) async {
+    print(data);
     try {
-      final response = await sendPost("relative", {
-        "birthDetails": {
-          "dobDay": 10,
-          "dobMonth": 8,
-          "dobYear": 1994,
-          "tobHour": 8,
-          "tobMin": 30,
-          "meridiem": "AM"
-        },
-        "birthPlace": {
-          "placeName": "Kulharia, Bihar, India",
-          "placeId": "ChIJwTa3v_6nkjkRC_b2yajUF_M"
-        },
-        "firstName": "Mohit",
-        "lastName": "Kumar",
-        "relationId": 3,
-        "gender": "MALE"
-      });
+      final response = await sendPost("relative", data);
       print(response);
       if (response != null) {
         return response.data;
@@ -127,15 +117,21 @@ class AppRepository {
     }
   }
 
-  Future<dynamic> getAllLocation(String place) async {
+  Future<List<Location>> getAllLocation(String place) async {
+    print(place);
     try {
       final response = await sendGet("location/place?inputPlace=${place}");
       print(response);
       if (response != null) {
-        return response.data;
+        List<Location> locations = [];
+        response.data["data"]
+            .forEach((e) => {print(e), locations.add(Location.fromJson(e))});
+        return locations;
+      } else {
+        return [];
       }
     } catch (e) {
-      return false;
+      return [];
     }
   }
 }

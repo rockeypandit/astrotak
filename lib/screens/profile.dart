@@ -1,7 +1,9 @@
+import 'package:astrotak/bloc/relativemanagement_bloc.dart';
 import 'package:astrotak/screens/basicProfile.dart';
 import 'package:astrotak/screens/fandfProfile.dart';
 import 'package:astrotak/styles/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class Profilepage extends StatefulWidget {
@@ -118,7 +120,25 @@ class _ProfilepageState extends State<Profilepage> {
                     )),
                 profileTab
                     ? const BasicProfile()
-                    : const FriendsAndFamilyProfile()
+                    : BlocBuilder<RelativemanagementBloc,
+                        RelativemanagementState>(builder: (context, state) {
+                        context
+                            .read<RelativemanagementBloc>()
+                            .add(GetAllRelatives());
+                        if (state is GetAllRelativesInProgress)
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        else if (state is GetAllRelativesFailure)
+                          return Center(
+                            child: Text("Something went wrong"),
+                          );
+                        else if (state is GetAllRelativesSuccess) {
+                          return const FriendsAndFamilyProfile();
+                        } else {
+                          return Text("Something went wrong");
+                        }
+                      }),
               ],
             )),
             Center(
